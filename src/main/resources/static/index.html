@@ -1,15 +1,110 @@
 <!DOCTYPE html>
-
 <html>
+<head>
+    <title>RestAPI</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" type="text/css">
+</head>
+<body>
+    <h1>Rest API</h1>
 
-    <head>
-        <title>RestAPI</title>
-        <meta charset="UTF-8">
-        <link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" type="text/css">
-    </head>
-    
-    <body>
-        <h1>Rest API</h1>
-    </body>
-    
+    <h2>Listagem de Disciplinas</h2>
+    <table id="disciplinasTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Sigla</th>
+                <th>Curso</th>
+                <th>Semestre</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="disciplinasBody">
+        </tbody>
+    </table>
+
+    <h2>Criar Nova Disciplina</h2>
+    <form id="createDisciplinaForm">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" name="nome" required><br>
+
+        <label for="sigla">Sigla:</label>
+        <input type="text" id="sigla" name="sigla" required><br>
+
+        <label for="curso">Curso:</label>
+        <input type="text" id="curso" name="curso" required><br>
+
+        <label for="semestre">Semestre:</label>
+        <input type="text" id="semestre" name="semestre" required><br>
+
+        <button type="submit">Criar Disciplina</button>
+    </form>
+
+    <script>
+        function carregarDisciplinas() {
+            fetch('/api/disciplinas')
+                .then(response => response.json())
+                .then(disciplinas => {
+                    const disciplinasBody = document.getElementById('disciplinasBody');
+                    disciplinasBody.innerHTML = '';
+                    disciplinas.forEach(disciplina => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${disciplina.id}</td>
+                            <td>${disciplina.nome}</td>
+                            <td>${disciplina.sigla}</td>
+                            <td>${disciplina.curso}</td>
+                            <td>${disciplina.semestre}</td>
+                            <td>
+                                <button onclick="editarDisciplina(${disciplina.id})">Editar</button>
+                                <button onclick="excluirDisciplina(${disciplina.id})">Excluir</button>
+                            </td>
+                        `;
+                        disciplinasBody.appendChild(tr);
+                    });
+                });
+        }
+
+        function criarDisciplina(event) {
+            event.preventDefault();
+            const form = document.getElementById('createDisciplinaForm');
+            const data = new FormData(form);
+            fetch('/api/disciplinas', {
+                method: 'POST',
+                body: JSON.stringify({
+                    nome: data.get('nome'),
+                    sigla: data.get('sigla'),
+                    curso: data.get('curso'),
+                    semestre: data.get('semestre')
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(() => {
+                carregarDisciplinas();
+                form.reset();
+            });
+        }
+
+        function editarDisciplina(id) {
+            // Implemente a funcionalidade de edição aqui
+            console.log('Editar disciplina com ID:', id);
+        }
+
+        function excluirDisciplina(id) {
+            fetch(`/api/disciplinas/${id}`, {
+                method: 'DELETE'
+            })
+            .then(() => {
+                carregarDisciplinas();
+            });
+        }
+
+        document.getElementById('createDisciplinaForm').addEventListener('submit', criarDisciplina);
+
+        carregarDisciplinas();
+    </script>
+</body>
 </html>
